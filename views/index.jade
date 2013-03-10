@@ -1,0 +1,27 @@
+!!! 5
+html
+
+  head
+    title Motherboard
+    meta(charset='utf-8')
+
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+
+    // Stylesheets
+    if settings.env == 'production'
+      link(rel='stylesheet', href='/build/style.min.css')
+    else
+      link(rel='stylesheet', href='/css/style.css')
+
+  body
+    
+    // Application container
+    main(role='main')#main
+
+    // Application source
+    if settings.env == 'production'
+      // Serve single minified file
+      script(src='/build/app.min.js')
+    else
+      // Use RequireJS in development
+      script(data-main='/js/config', src='/components/requirejs/require.js')

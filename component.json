@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "jquery": "~1.9.1",
+    "lodash": "~1.0.1",
+    "backbone": "~0.9.10",
+    "requirejs": "~2.1.5",
+    "handlebars": "~1.0.0-rc.3",
+    "socket.io": "~0.9.11",
+    "almond": "~0.2.5"
+  }
+}
