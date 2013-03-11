@@ -3,7 +3,8 @@ var express = require('express')
   , util = require('util')
   , EventEmitter = require('events').EventEmitter
   , _ = require('lodash')
-  , sio = require('socket.io');
+  , sio = require('socket.io')
+  , redis = require('redis');
 
 var app = express();
 // Need a `http.Server` for socket.io
@@ -32,7 +33,7 @@ util.inherits(Producer, EventEmitter);
 
 Producer.prototype.run = function() {
   // Fake the creation of events
-  setInterval(_.bind(this.createEvent, this), 2000);
+  setInterval(_.bind(this.createEvent, this), 5000);
   console.log('Started producer on channel ' + this.channel);
 };
 
@@ -51,38 +52,74 @@ Producer.prototype.createEvent = function() {
 };
 
 // Tracker
-function Tracker(channel) {
+function Tracker(channel, redisClient, redisPubSubClient) {
   this.channel = channel;
+  this.redisClient = redisClient;
+  // emit event as updates come through redis pub/sub
+  // TODO: decide if this is the best place, as we need a dedicated pubsub client
+  var that = this;
+  if (redisPubSubClient) {
+    redisPubSubClient.on('message', function(channel, message) {
+      console.log('redis message ' + channel + ' ' + message);
+      that.emit(channel, message);
+    });
+    redisPubSubClient.subscribe(this.channel);
+  }
 }
 
 util.inherits(Tracker, EventEmitter);
 
 Tracker.prototype.sync = function() {
   // Fake sync with database
-  this.value = 900;
+  var value = 900;
+  var that = this;
+  if (this.redisClient) {
+    this.redisClient.set(channel, value, function(err, res) {
+      if (err) throw err;
+      console.log('synced redis store ' + that.channel + ' ' + res);
+      // emit through redis store, tracker will pick it up and emit through itself
+      that.redisClient.publish(that.channel, res);
+    });
+  } else {
+    // Memory store
+    this.value = value;
+    console.log('synced memory store ' + this.channel + ' ' + this.value);
+    that.emit(that.channel, value);
+  }
 };
 
-Tracker.prototype.onEvent = function(valueUpdate) {
+// Process an "event" that happened on the channel
+Tracker.prototype.onEvent = function(data) {
   // Update value with whatever happened on the channel
-  this.value = this.value + valueUpdate;
-  this.emit(this.channel, this.value);
-  // console.log('Tracker ' + this.channel + ' ' + this.value);
+  var that = this;
+  if (this.redisClient) {
+    this.redisClient.incrby(channel, data, function(err, res) {
+      if (err) throw err;
+      console.log('updated redis store ' + that.channel + ' ' + res);
+      // emit through redis store, tracker will pick it up and emit through itself
+      that.redisClient.publish(that.channel, res);
+    });
+  } else {
+    // Memory store
+    this.value = this.value + data;
+    console.log('updated memory store ' + this.channel + ' ' + this.value);
+    that.emit(that.channel, this.value);
+  }
 };
 
 // Publisher
-function Publisher(channel) {
+function Publisher(channel, sockets) {
   this.channel = channel;
+  this.sockets = sockets;
 }
 
-util.inherits(Publisher, EventEmitter);
-
-Publisher.prototype.onUpdate = function(value) {
-  io.sockets.emit('widget', {
-    channel: this.channel,
-    value: value
-  });
-  this.emit(this.channel, value);
-  // console.log('Publisher ' + this.channel + ' ' + value);
+Publisher.prototype.onUpdate = function(data) {
+  if (this.sockets) {
+    this.sockets.emit('widget', {
+      channel: this.channel,
+      value: data
+    });
+  }
 };
 
 // Sockets
@@ -101,11 +138,38 @@ if (app.get('env') === 'production') {
   });
 }
 
+// Redis
+if (process.env.REDISTOGO_URL) {
+  var rtg   = require('url').parse(process.env.REDISTOGO_URL);
+  var client = exports.client  = redis.createClient(rtg.port, rtg.hostname);
+  client.auth(rtg.auth.split(':')[1]); // auth 1st part is username and 2nd is password separated by ":"
+} else {
+  var client = exports.client  = redis.createClient();
+}
+
+client.on("error", function (err) {
+  console.log("Error " + err);
+});
+
+// dedicated pub/sub client for the tracker
+if (process.env.REDISTOGO_URL) {
+  var rtg   = require('url').parse(process.env.REDISTOGO_URL);
+  var pubSubClient = redis.createClient(rtg.port, rtg.hostname);
+  pubSubClient.auth(rtg.auth.split(':')[1]); // auth 1st part is username and 2nd is password separated by ":"
+} else {
+  var pubSubClient = redis.createClient();
+}
+
+// try some redis stuff
+// client.set('registered_sites', 900, redis.print);
+// client.incrby('registered_sites', 3, redis.print);
+// client.incrby('registered_sites', -2, redis.print);
+
 // Widget
 var channel = 'registered_sites';
 producer = new Producer(channel);
-tracker = new Tracker(channel);
-publisher = new Publisher(channel);
+tracker = new Tracker(channel, client, pubSubClient);
+publisher = new Publisher(channel, io.sockets);
 producer.on(channel, _.bind(tracker.onEvent, tracker));
 tracker.on(channel, _.bind(publisher.onUpdate, publisher));
 
