@@ -42,10 +42,10 @@ Producer.prototype.createEvent = function() {
   if (Math.random() > 0.33 ) {
     // Go up half the time, down the other half
     if (Math.random() < 0.5) {
-      this.emit(this.channel, 1);
+      this.emit(this.channel, {change: 1});
       // console.log('Producer ' + this.channel + ' 1');
     } else {
-      this.emit(this.channel, -1);
+      this.emit(this.channel, {change: -1});
       // console.log('Producer ' + this.channel + ' -1');
     }
   }
@@ -72,28 +72,44 @@ util.inherits(Tracker, EventEmitter);
 Tracker.prototype.sync = function() {
   // Fake sync with database
   var value = 900;
-  var that = this;
-  if (this.redisClient) {
-    this.redisClient.set(channel, value, function(err, res) {
-      if (err) throw err;
-      console.log('synced redis store ' + that.channel + ' ' + res);
-      // emit through redis store, tracker will pick it up and emit through itself
-      that.redisClient.publish(that.channel, res);
-    });
-  } else {
-    // Memory store
-    this.value = value;
-    console.log('synced memory store ' + this.channel + ' ' + this.value);
-    that.emit(that.channel, value);
-  }
+  console.log('syncing ' + this.channel);
+  this.setValue(value);
 };
 
 // Process an "event" that happened on the channel
 Tracker.prototype.onEvent = function(data) {
-  // Update value with whatever happened on the channel
+  // Setting a new "value" wins over "change"
+  if (data.value) {
+    this.setValue(data.value);
+  } 
+  else if (data.change) {
+    this.updateValue(data.change);
+  }
+  // Else do nothing
+};
+
+Tracker.prototype.setValue = function(value) {
   var that = this;
   if (this.redisClient) {
-    this.redisClient.incrby(channel, data, function(err, res) {
+    this.redisClient.set(channel, value, function(err, res) {
+      if (err) throw err;
+      // Carefull, `res` is "OK" when setting a value
+      console.log('set redis store ' + that.channel + ' ' + value);
+      // emit through redis store, tracker will pick it up and emit through itself
+      that.redisClient.publish(that.channel, value);
+    });
+  } else {
+    // Memory store
+    this.value = value;
+    console.log('set memory store ' + this.channel + ' ' + this.value);
+    that.emit(that.channel, this.value);
+  }
+};
+
+Tracker.prototype.updateValue = function(change) {
+  var that = this;
+  if (this.redisClient) {
+    this.redisClient.incrby(channel, change, function(err, res) {
       if (err) throw err;
       console.log('updated redis store ' + that.channel + ' ' + res);
       // emit through redis store, tracker will pick it up and emit through itself
@@ -101,9 +117,19 @@ Tracker.prototype.onEvent = function(data) {
     });
   } else {
     // Memory store
-    this.value = this.value + data;
+    this.value = this.value + change;
     console.log('updated memory store ' + this.channel + ' ' + this.value);
     that.emit(that.channel, this.value);
+  }
+};
+
+// Check if we can process the event data (return true or false)
+Tracker.prototype.isValidEventData = function(data) {
+  if ((data.change && parseFloat(data.change)) || 
+      (data.value && parseFloat(data.value))) {
+    return true;
+  } else {
+    return false;
   }
 };
 
@@ -172,6 +198,25 @@ tracker = new Tracker(channel, client, pubSubClient);
 publisher = new Publisher(channel, io.sockets);
 producer.on(channel, _.bind(tracker.onEvent, tracker));
 tracker.on(channel, _.bind(publisher.onUpdate, publisher));
+
+// Listener API
+app.post('/widgets/:channel', function(req, res) {
+  // Note: client sending HTTP request better have
+  // Content-Type: application/json
+  // or else body won't get parsed
+  if (req.params.channel === 'registered_sites') {
+    console.log(req.body);
+    // Shouldn't be using `tracker` in here... a `listener`?
+    if (tracker.isValidEventData(req.body)) {
+      tracker.onEvent(req.body);
+      res.send(200);
+    } else {
+      res.send(400);
+    }
+  } else {
+    res.send(404);
+  }
+});
 
 producer.run();
 // Race condition here...
