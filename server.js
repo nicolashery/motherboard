@@ -17,7 +17,7 @@ app.use(express.session());
 app.use(app.router);
 app.use(express.static(__dirname + '/public'));
 
-app.set('demo', process.env.DEMO || true);
+app.set('demo', process.env.DEMO === 'true');
 
 // ROUTES
 app.get('/', function(req, res) {
