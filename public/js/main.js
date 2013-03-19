@@ -1,12 +1,9 @@
 require([
   'app',
-  'router',
-  'mediator'
+  'router'
 ],
 
-function(app, Router, mediator) {
-
-  app.mediator = mediator;
+function(app, Router) {
 
   // From Backbone Boilerplate
   // https://github.com/tbranyen/backbone-boilerplate

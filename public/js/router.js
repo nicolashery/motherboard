@@ -1,11 +1,15 @@
 define([
   'app',
-  'widget'
+  'widgets/index'
 ],
 
-function(app, Widget) {
+function(app, widgets) {
 
   var Router = Backbone.Router.extend({
+
+    initialize: function() {
+      app.widgets = widgets;
+    },
 
     routes: {
       '': 'index'
@@ -13,10 +17,9 @@ function(app, Widget) {
 
     index: function() {
       console.log('----- Router#index -----');
-      var widget = app.widget = new Widget.Model({
-        title: 'Registered Sites'
-      }, {channel: 'registered_sites'});
-      var widgetView = new Widget.View({
+      // TODO: render the collection instead
+      var widget = widgets.get('active_users');
+      var widgetView = new (widget.getView())({
         el: '#main',
         model: widget
       });

@@ -11,9 +11,10 @@ function(app, io) {
   // Sockets
   var socket = io.connect();
 
-  socket.on('widget', function(data) {
-    if (data.channel) {
-      mediator.trigger(data.channel, data);
+  socket.on('widget:update', function(attributes) {
+    if (attributes.name) {
+      // console.log('widget:update ' + attributes.name);
+      mediator.trigger(attributes.name, attributes);
     }
   });
 

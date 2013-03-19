@@ -10,7 +10,7 @@ module.exports = function(grunt) {
           'node': true,
           'laxcomma': true
         },
-        src: ['*.js', 'public/js/**/*.js']
+        src: ['*.js', 'lib/**/*.js', 'public/js/**/*.js']
       }
     },
 

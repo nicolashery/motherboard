@@ -23,3 +23,8 @@ body {
   font-size: 28px;
   color: #999;
 }
+
+.widget-timestamp {
+  font-size: 13px;
+  color: #999;
+}
