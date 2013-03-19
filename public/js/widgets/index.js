@@ -1,13 +1,13 @@
 define([
   'app',
-  'lib/widget_collection',
+  'lib/widgets',
   // Widgets
   'widgets/active_users'
 ],
 
-function(app, WidgetCollection, activeUsersWidget) {
+function(app, Widgets, activeUsersWidget) {
 
-  var widgets = new WidgetCollection();
+  var widgets = new Widgets.Collection();
 
   // Add the widgets you want here
   widgets.add(activeUsersWidget);

@@ -35,6 +35,8 @@ function(app, mediator) {
 
   Widget.View = Backbone.View.extend({
 
+    tagName: 'li',
+
     template: JST.widget,
 
     render: function() {

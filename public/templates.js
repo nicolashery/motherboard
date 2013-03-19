@@ -35,3 +35,12 @@ helpers = helpers || Handlebars.helpers; data = data || {};
     + "</div>\n</div>";
   return buffer;
   });
+
+this["JST"]["widgets"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [2,'>= 1.0.0-rc.3'];
+helpers = helpers || Handlebars.helpers; data = data || {};
+  
+
+
+  return "<div class=\"widgets\">\n  <ul class=\"js-widget-list\"></ul>\n</div>";
+  });
