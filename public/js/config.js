@@ -11,6 +11,8 @@ require.config({
     backbone: '../components/backbone/backbone',
     handlebars: '../components/handlebars/handlebars',
     socketio: '../components/socket.io/dist/socket.io',
+    moment: '../components/moment/moment',
+    livestamp: '../components/livestampjs/livestamp',
     templates: '../templates'
   },
 
@@ -28,6 +30,10 @@ require.config({
 
     socketio: {
       exports: 'io'
+    },
+
+    livestamp: {
+      deps: ['jquery', 'moment']
     },
 
     templates: {

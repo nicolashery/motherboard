@@ -1,6 +1,8 @@
 define([
   'app',
-  'lib/widget'
+  'lib/widget',
+  // jQuery plugin
+  'livestamp'
 ],
 
 function(app, Widget) {
@@ -45,7 +47,9 @@ function(app, Widget) {
     },
 
     updateTimestamp: function() {
-      this.$timestamp.text(this.model.get('timestamp'));
+      // The livestamp jQuery plugin will automatically pick this up
+      // and update the text of the html element
+      this.$timestamp.attr('data-livestamp', this.model.get('timestamp'));
     }
 
   });

@@ -6,6 +6,8 @@
     "requirejs": "~2.1.5",
     "handlebars": "~1.0.0-rc.3",
     "socket.io": "~0.9.11",
-    "almond": "~0.2.5"
+    "almond": "~0.2.5",
+    "livestampjs": "git://github.com/mattbradley/livestampjs.git#~1.1.2",
+    "moment": "~2.0.0"
   }
 }

@@ -14,11 +14,11 @@ helpers = helpers || Handlebars.helpers; data = data || {};
   if (stack1 = helpers.title) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.title; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</div>\n  <div class=\"widget-timestamp js-timestamp\">";
+    + "</div>\n  <div class=\"widget-timestamp\">\n    <span class=\"js-timestamp\" data-livestamp=\"";
   if (stack1 = helpers.timestamp) { stack1 = stack1.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.timestamp; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   buffer += escapeExpression(stack1)
-    + "</div>\n</div>";
+    + "\"></span>\n  </div>\n</div>";
   return buffer;
   });
 
