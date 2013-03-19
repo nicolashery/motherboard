@@ -7,7 +7,17 @@ function(app) {
   var Widgets = {};
 
   Widgets.Collection = Backbone.Collection.extend({
-    // TODO: add method `fetchAll`
+
+    // Unlike Backbone's Collection#fetch, this method goes through
+    // the collection and calls each model's `fetch` method
+    // (Because our widgets collection is already populated 
+    //  on the client-side)
+    fetchAll: function() {
+      this.each(function(widget) {
+        widget.fetch();
+      });
+    }
+
   });
 
   Widgets.View = Backbone.View.extend({

@@ -18,7 +18,9 @@ function(app, Widgets, widgets) {
 
     index: function() {
       console.log('----- Router#index -----');
-      // widgets.fetchAll(); // TODO
+      // Get widget initial values
+      widgets.fetchAll();
+      // Add widget list view to DOM
       var widgetsView = new Widgets.View({collection: widgets});
       $('#main').append(widgetsView.render().el);
       widgetsView.addAll();

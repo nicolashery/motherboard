@@ -5,7 +5,14 @@ var producers = module.parent.exports
 var httpEndpoint = producers.httpEndpoint;
 
 var producer = new Producer('active_users', {
+  
   httpEndpoint: httpEndpoint,
+
+  getInitial: function(callback) {
+    var data = {value: 700}; 
+    callback(null, data);
+  },
+
   getUpdate: function(callback) {
     var data;
     // Only update 2 out of 3 times
@@ -19,6 +26,7 @@ var producer = new Producer('active_users', {
       callback(null, data);
     }
   }
+
 });
 
 producers.add(producer);

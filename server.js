@@ -61,6 +61,36 @@ widgets.forEach(function(widget) {
   widget.on('update', _.bind(publisher.publish, publisher));
 });
 
+// HTTP API
+// This first one is nice, but it's not really used by the client side...
+app.get('/widgets', function(req, res) {
+  var widgetCount = widgets.list.length;
+  var data = [];
+  function onWidgetSerialized(err, attributes) {
+    if(err) throw err;
+    data.push(attributes);
+    if (data.length === widgetCount) {
+      res.send(data);
+    }
+  }
+  widgets.forEach(function(widget) {
+    widget.serialize(onWidgetSerialized);
+  });
+});
+// Used by client-side to get initial values of widgets
+app.get('/widgets/:name', function(req, res) {
+  var widget = widgets.get(req.params.name);
+  if (widget) {
+    widget.serialize(function(err, attributes) {
+      if (err) throw err;
+      res.send(attributes);
+    });
+  } else {
+    res.send(404, {error: 'Unknown widget'});
+  }
+});
+
+
 // DEMO
 if (app.get('demo')) {
   // For demo, run only one instance of this app & run producers in this thread

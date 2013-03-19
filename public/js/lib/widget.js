@@ -9,7 +9,9 @@ function(app, mediator) {
 
   Widget.Model = Backbone.Model.extend({
 
-    idAttribute: "name",
+    idAttribute: 'name',
+
+    urlRoot: '/widgets',
 
     defaults: {
       'title': 'Untitled widget'
