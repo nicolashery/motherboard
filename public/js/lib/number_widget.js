@@ -1,11 +1,12 @@
 define([
   'app',
   'lib/widget',
+  'numeral',
   // jQuery plugin
   'livestamp'
 ],
 
-function(app, Widget) {
+function(app, Widget, numeral) {
 
   var NumberWidget = {};
 
@@ -39,10 +40,16 @@ function(app, Widget) {
       // Cache some elements
       this.$value = this.$('.js-value');
       this.$timestamp = this.$('.js-timestamp');
+      // TODO: we're rendering the value twice just to set the correct font size
+      // move to handlebars helper?
+      this.updateValue();
       return this;
     },
 
     updateValue: function() {
+      this.$value.text(''); // Empty text to avoid seeing resize
+      this.resetValueClasses();
+      this.setValueClass(this.model.get('value'));
       this.$value.text(this.model.get('value'));
     },
 
@@ -56,6 +63,22 @@ function(app, Widget) {
         .subtract('seconds', 1)
         .format();
       this.$timestamp.attr('data-livestamp', timestamp);
+    },
+
+    resetValueClasses: function() {
+      this.$value.removeClass('widget-value-kilo widget-value-mega');
+      return this;
+    },
+
+    setValueClass: function(value) {
+      if (value >= 1e6) {
+        // Millions
+        this.$value.addClass('widget-value-mega');
+      } else if (value >= 1e3) {
+        // Thousands
+        this.$value.addClass('widget-value-kilo');
+      }
+      return this;
     }
 
   });
