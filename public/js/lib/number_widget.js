@@ -49,7 +49,13 @@ function(app, Widget) {
     updateTimestamp: function() {
       // The livestamp jQuery plugin will automatically pick this up
       // and update the text of the html element
-      this.$timestamp.attr('data-livestamp', this.model.get('timestamp'));
+      // Hack: substract a few seconds because if server and client clocks
+      // are not ticking at the same time, livestamp might show
+      // 'in a few seconds' :-/
+      var timestamp = moment(this.model.get('timestamp'))
+        .subtract('seconds', 1)
+        .format();
+      this.$timestamp.attr('data-livestamp', timestamp);
     }
 
   });
