@@ -36,7 +36,9 @@ function(app, Widget, numeral) {
     },
 
     render: function() {
-      this.$el.html(this.template(this.model.toJSON()));
+      var data = this.model.toJSON();
+      data.value = this.getFormattedValue();
+      this.$el.html(this.template(data));
       // Cache some elements
       this.$value = this.$('.js-value');
       this.$timestamp = this.$('.js-timestamp');
@@ -46,11 +48,17 @@ function(app, Widget, numeral) {
       return this;
     },
 
+    getFormattedValue: function() {
+      var value = this.model.get('value');
+      value = numeral(value).format('0,0');
+      return value;
+    },
+
     updateValue: function() {
       this.$value.text(''); // Empty text to avoid seeing resize
       this.resetValueClasses();
       this.setValueClass(this.model.get('value'));
-      this.$value.text(this.model.get('value'));
+      this.$value.text(this.getFormattedValue());
     },
 
     updateTimestamp: function() {

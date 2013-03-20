@@ -13,6 +13,7 @@ require.config({
     socketio: '../components/socket.io/dist/socket.io',
     moment: '../components/moment/moment',
     livestamp: '../components/livestampjs/livestamp',
+    numeral: '../components/numeral/numeral',
     templates: '../templates'
   },
 
