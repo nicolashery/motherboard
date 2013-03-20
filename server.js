@@ -24,6 +24,10 @@ app.get('/', function(req, res) {
   res.render('index');
 });
 
+app.get('/mockup', function(req, res) {
+  res.render('mockup');
+});
+
 // Need a `http.Server` for socket.io
 var server = module.exports.server = http.createServer(app);
 
