@@ -6,8 +6,8 @@ define([
 function(app, NumberWidget) {
 
   var widget = new NumberWidget.Model({
-    name: 'active_users',
-    title: 'Active Users'
+    name: 'registered_users',
+    title: 'Registered Users'
   });
 
   return widget;

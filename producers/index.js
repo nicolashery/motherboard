@@ -9,4 +9,6 @@ var producers = module.exports = new Producers({
 });
 
 // Require the producers you want to run here
-require('./active_users');
+require('./registered_users');
+require('./premium_users');
+require('./visitors_online');
