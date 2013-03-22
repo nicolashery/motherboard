@@ -15,7 +15,8 @@ module.exports = function(grunt) {
           'lib/**/*.js',
           'public/js/**/*.js',
           'widgets/**/*.js',
-          'producers/**/*.js'
+          'producers/**/*.js',
+          'test/**/*.js'
         ]
       }
     },
