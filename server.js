@@ -68,7 +68,7 @@ widgets.forEach(function(widget) {
 // HTTP API
 // This first one is nice, but it's not really used by the client side...
 app.get('/widgets', function(req, res) {
-  var widgetCount = widgets.list.length;
+  var widgetCount = widgets.count();
   var data = [];
   function onWidgetSerialized(err, attributes) {
     if(err) throw err;
