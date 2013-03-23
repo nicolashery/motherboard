@@ -1,12 +1,13 @@
 var app = module.parent.exports.app
   , server = module.parent.exports.server
-  , sio = require('socket.io');
+  , sio = require('socket.io')
+  , debug = require('debug')('motherboard:sockets');
 
 // Sockets
 var io = sio.listen(server, {'log level': 2});
 
 io.sockets.on('connection', function(socket) {
-  console.log('socket.io connected');
+  debug('socket.io connected');
 });
 
 // Heroku doesn't support WebSockets (yet!), force long polling in production

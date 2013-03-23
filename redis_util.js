@@ -1,5 +1,6 @@
 var redis = require('redis');
 
+// Utility function to create new Redis clients
 var createRedisClient = function() {
   var rtg, client;
   if (process.env.REDISTOGO_URL) {
