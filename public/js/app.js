@@ -9,7 +9,7 @@ function(Backbone) {
   // creation
   var app = {};
 
-  // For debugging, attach to window (remember to comment this out)
+  // For debugging, attach to window
   window.app = app;
 
   return app;

@@ -1,10 +1,6 @@
-var producers = module.parent.exports
-  , Producer = require('../lib/producer');
+var Producer = require('../lib/producer');
 
 var producer = new Producer('premium_users', {
-  
-  // Get `httpEndpoint` from parent collection
-  httpEndpoint: producers.httpEndpoint,
 
   // In milliseconds
   updateInterval: 7000,
@@ -29,7 +25,5 @@ var producer = new Producer('premium_users', {
   }
 
 });
-
-producers.add(producer);
 
 module.exports = producer;
