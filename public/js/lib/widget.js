@@ -29,7 +29,7 @@ function(app, mediator) {
     },
 
     // TODO: A link to the view, probably a better way to do this
-    View: function() {
+    getView: function() {
       return Widget.View;
     }
 

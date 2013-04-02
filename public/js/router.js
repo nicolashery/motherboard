@@ -17,7 +17,7 @@ function(app, Widgets, widgets) {
     },
 
     index: function() {
-      console.log('----- Router#index -----');
+      // console.log('----- Router#index -----');
       // Get widget initial values
       widgets.fetchAll();
       // Add widget list view to DOM

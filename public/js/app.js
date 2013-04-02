@@ -5,11 +5,9 @@ define([
 
 function(Backbone) {
   
-  // Provide a global location to place configuration settings and module
-  // creation
+  // Provide a global location to place configuration settings and modules
   var app = {};
 
-  // For debugging, attach to window
   window.app = app;
 
   return app;

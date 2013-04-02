@@ -13,7 +13,6 @@ function(app, io) {
 
   socket.on('widget:update', function(attributes) {
     if (attributes.name) {
-      // console.log('widget:update ' + attributes.name);
       mediator.trigger(attributes.name, attributes);
     }
   });
