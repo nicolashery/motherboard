@@ -2,6 +2,17 @@
 
 A simple real-time dashboard for internal metrics.
 
+- [Demo](#demo)
+- [Install](#install)
+- [Usage](#usage)
+- [Architecture overview](#architecture-overview)
+- [Development](#development)
+- [Room for improvement](#room-for-improvement)
+
+## Demo
+
+You can see a running demo with a few example widgets at: [http://motherboard.herokuapp.com/](http://motherboard.herokuapp.com/)
+
 ## Install
 
 Requirements:
@@ -205,25 +216,106 @@ $ node worker
 $ DEBUG=motherboard:* node worker
 ```
 
+By default, producers expect the dashboard app to be running on `localhost:3000`, and will post data events to that `/channels` HTTP endpoint. If you are running it on a different host/port (for example when deployed), specify the full enpoint with the environment variable:
+
+```bash
+$ export PRODUCER_HTTPENDPOINT=http://some-host:3001/channels
+```
+
 **NOTE**: In the demo, we ran the producers in the same thread as the app with `DEMO=true node server`, but in practice you will want to run them in the separate background worker like shown above.
 
 ## Deployment
 
+The dashboard app is ready for deployment to [Heroku](http://get.heroku.com/), but can easily be adapted to any other deployment environment.
+
+### Heroku
+
+Create the app (replace `my-motherboard` with the name you want):
+
+```bash
+$ heroku create my-motherboard
+```
+
+Provision the Redis datastore from [Redis To Go](https://addons.heroku.com/redistogo):
+
+```bash
+$ heroku heroku addons:add redistogo
+```
+
+(The `REDISTOGO_URL` environment variable is automatically created for the app to use.)
+
+Set the `/channels` HTTP endpoint for **producers** (see section on producers above):
+
+```bash
+$ heroku config:set PRODUCER_HTTPENDPOINT=http://my-motherboard.herokuapp.com/channels
+```
+
+Set the app environment to production, and optionally set more verbose output for the logs:
+
+```bash
+$ heroku config:set NODE_ENV=production
+$ heroku config:set DEBUG=motherboard:*
+```
+
+Push the app:
+
+```bash
+$ git push heroku master
+```
+
 ## Architecture overview
+
+The dashboard app is broken down into internal components each responsible for different things. If we follow the way data flows through the app, these components are:
+
+- [Listener](/blob/master/lib/listener.js): Captures external **data events** (ex: "user registered") on different **data channels**, and passes them on to the appropriate widgets.
+- [Widget (Server)](/blob/master/lib/widget.js): Takes **data events** from one or more **data channel**, processes them to update a particular **metric** (ex: "number of registered users"), and persists them to a datastore.
+- [Publisher](/blob/master/lib/publisher.js): Listens for **widget updates** and takes care of publishing them to **client** widgets (web UI), as well as possible other instances of the app.
+- [Widget (Client)](/blob/master/public/js/lib/widget.js): Updates the UI as changes to the widget's **metric** are published by the server-side of the app.
+
+The app also provides a [Producer](/blob/master/lib/producer.js) component that you can optionally use to create **data events**.
 
 ## Development
 
-- Debug output
+### Debug
 
-- Grunt stuff
+The app uses the [debug](https://github.com/visionmedia/debug) module to log things to the console. You can see more verbose output by setting the `DEBUG` environment variable before running the app:
 
-- Testing
+```bash
+$ DEBUG=motherboard:* node server
+```
+
+### Build
+
+[Grunt](http://gruntjs.com/) is used to assemble [RequireJS](http://requirejs.org/) client-side modules, concatenate and minify JavaScript and CSS files, and compile [Handlebars](http://handlebarsjs.com/) templates.
+
+During development run:
+
+```bash
+$ grunt watch
+```
+
+And before deployment, build concatenated and minified files with:
+
+```bash
+$ grunt build
+```
+
+### Test
+
+The [Mocha](http://visionmedia.github.com/mocha/) framework with the [Chai](http://chaijs.com/) assertion library are used for testing.
+
+To run the server-side tests use:
+
+```bash
+$ make test
+```
 
 ## Room for improvement
 
-- numbertrend widget, leaderboard widget
-- authentication
-- better code sharing between client and server side, using browserify so only need to add widgets in one place
-- more tests
-- other data channel transports (rabbitmq...)
+This is a very basic version of a dashboard app, and there is a lot of room for improvements. Some of these are:
 
+- More widget types: a Number & Trend Widget (ex: "Registered Users 1,023 up 20% from 7 days ago"), a Leaderboard Widget (ex: "Top Most Active Users"), etc.
+- Authentication
+- Better code sharing between the client and server side, possibly to make it so you only need to create one file to add a widget
+- More tests
+- Other data channel transport options (RabbitMQ?)
