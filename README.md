@@ -60,14 +60,14 @@ For the server-side part, create a file `widgets/my_widget.js` containing:
 ```javascript
 var NumberWidget = require('../lib/number_widget');
 
-var widget = new NumberWidget('registered_users', {
-  channels: ['registered_users']
+var widget = new NumberWidget('my_widget', {
+  channels: ['some_data_channel']
 });
 
 module.exports = widget;
 ```
 
-There are different types of widgets (only `NumberWidget` is currently implemented), but they all have a **name**, `'my_widget'`, and listen to one or more **data channel**, `'some_data_channel'` in our example. A **data channel** corresponds to incomming data updates, usually from other systems and applications. More on that later.
+There are different types of widgets (only `NumberWidget` is currently implemented), but they all have a **name**, `'my_widget'`, and listen to one or more **data channels**, `'some_data_channel'` in our example. A **data channel** corresponds to incomming data updates, usually from other systems and applications. More on that later.
 
 For the dashboard app to load the server-side portion of your widget, make sure you add it to the `widgets` collection by adding a line in `widgets/index.js`:
 
@@ -216,10 +216,10 @@ $ node worker
 $ DEBUG=motherboard:* node worker
 ```
 
-By default, producers expect the dashboard app to be running on `localhost:3000`, and will post data events to that `/channels` HTTP endpoint. If you are running it on a different host/port (for example when deployed), specify the full enpoint with the environment variable:
+By default, producers expect the dashboard app to be running on `localhost:3000`, and will post data events to that `/channels` HTTP endpoint. If you are running it on a different host/port (for example when deployed), specify the full endpoint with the environment variable:
 
 ```bash
-$ export PRODUCER_HTTPENDPOINT=http://some-host:3001/channels
+$ export PRODUCER_HTTPENDPOINT='http://some-host:3001/channels'
 ```
 
 **NOTE**: In the demo, we ran the producers in the same thread as the app with `DEMO=true node server`, but in practice you will want to run them in the separate background worker like shown above.
@@ -239,7 +239,7 @@ $ heroku create my-motherboard
 Provision the Redis datastore from [Redis To Go](https://addons.heroku.com/redistogo):
 
 ```bash
-$ heroku heroku addons:add redistogo
+$ heroku addons:add redistogo
 ```
 
 (The `REDISTOGO_URL` environment variable is automatically created for the app to use.)
@@ -247,7 +247,7 @@ $ heroku heroku addons:add redistogo
 Set the `/channels` HTTP endpoint for **producers** (see section on producers above):
 
 ```bash
-$ heroku config:set PRODUCER_HTTPENDPOINT=http://my-motherboard.herokuapp.com/channels
+$ heroku config:set PRODUCER_HTTPENDPOINT='http://my-motherboard.herokuapp.com/channels'
 ```
 
 Set the app environment to production, and optionally set more verbose output for the logs:
@@ -267,12 +267,12 @@ $ git push heroku master
 
 The dashboard app is broken down into internal components each responsible for different things. If we follow the way data flows through the app, these components are:
 
-- [Listener](/blob/master/lib/listener.js): Captures external **data events** (ex: "user registered") on different **data channels**, and passes them on to the appropriate widgets.
-- [Widget (Server)](/blob/master/lib/widget.js): Takes **data events** from one or more **data channel**, processes them to update a particular **metric** (ex: "number of registered users"), and persists them to a datastore.
-- [Publisher](/blob/master/lib/publisher.js): Listens for **widget updates** and takes care of publishing them to **client** widgets (web UI), as well as possible other instances of the app.
-- [Widget (Client)](/blob/master/public/js/lib/widget.js): Updates the UI as changes to the widget's **metric** are published by the server-side of the app.
+- [Listener](lib/listener.js): Captures external **data events** (ex: "user registered") on different **data channels**, and passes them on to the appropriate widgets.
+- [Widget (Server)](lib/widget.js): Takes **data events** from one or more **data channels**, processes them to update a particular **metric** (ex: "number of registered users"), and persists the metric to a datastore.
+- [Publisher](lib/publisher.js): Listens for **widget updates** and takes care of publishing them to **client** widgets (web browser), as well as possible other instances of the app.
+- [Widget (Client)](public/js/lib/widget.js): Updates the UI as changes to the widget's **metric** are published by the server-side of the app.
 
-The app also provides a [Producer](/blob/master/lib/producer.js) component that you can optionally use to create **data events**.
+The app also provides a [Producer](lib/producer.js) component that you can optionally use to create **data events**.
 
 ## Development
 
@@ -294,7 +294,7 @@ During development run:
 $ grunt watch
 ```
 
-And before deployment, build concatenated and minified files with:
+And before deployment, build the concatenated and minified files with:
 
 ```bash
 $ grunt build
@@ -316,6 +316,6 @@ This is a very basic version of a dashboard app, and there is a lot of room for 
 
 - More widget types: a Number & Trend Widget (ex: "Registered Users 1,023 up 20% from 7 days ago"), a Leaderboard Widget (ex: "Top Most Active Users"), etc.
 - Authentication
-- Better code sharing between the client and server side, possibly to make it so you only need to create one file to add a widget
+- Better code sharing between the client-side and server-side, possibly to make it so you only need to create one file to add a widget
 - More tests
 - Other data channel transport options (RabbitMQ?)
