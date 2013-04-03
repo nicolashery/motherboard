@@ -274,6 +274,8 @@ The dashboard app is broken down into internal components each responsible for d
 
 The app also provides a [Producer](lib/producer.js) component that you can optionally use to create **data events**.
 
+![Architecture overview](architecture.jpg)
+
 ## Development
 
 ### Debug
